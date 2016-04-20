@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper  namespace="Cmn" >
+
+	<!-- 検索のページング -->
+	<sql id="searchKeyPage" >
+		<if test="_pagesize gt 0">
+			offset #{_skiprows} limit #{_pagesize}
+		</if>
+	</sql>
+	
+	<!-- 検索のfor update -->
+	<sql id="forUpdate" >
+		<if test="@com.sampletool.common.OgnlUtils@isPresent(_parameter, 'forUpdate') and forUpdate">
+			for update 
+		</if>
+	</sql>
+	
+
+</mapper>

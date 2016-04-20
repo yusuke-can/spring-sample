@@ -1,0 +1,12 @@
+/**
+プログラムで出力する部分のスタイル。
+タイトルや左メニューなどのデザインはdefault.css
+*/
+
+
+div.prog-err {
+	margin-right: 50px;
+	color: red;
+	font: bold 15px;
+	background-color: #EDFFBE;//#FF9872;
+}

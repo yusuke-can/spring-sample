@@ -1,0 +1,39 @@
+<configuration>
+<!-- 
+　※ここでの設定は特殊です。
+　 初級者用ということで、mavenを使用しないというルールにしたので記述が複雑になっています。
+　mavenを使用するならばこのような複雑なことをしなくても大丈夫そうだということを先に忠告しておきます。
+　mavenを使用すると、テスト時はlogback-test.xmlを使用し、WARファイル作成時にはlogback-test.xmlを含めないようにするようです。
+　
+　【記述内容】
+　実際のログ設定は別のファイルに記述する。
+　ここでは、起動条件によって読み込む設定ファイルをスイッチする。
+　　・eclipse上でtomcat起動時
+　　　　⇒${catalina.home}/app-info/sample/logback-Conf.xml
+　　・JUnitテスト時（起動オプションに -Dcatalina.home=・・・を指定した場合 ）
+　　　　⇒ここで設定を記述。理由は分からないがJUnit起動時だけresource属性のクラスパスが認識されないため、直接記述した。
+
+　参考：http://logback.qos.ch/manual/configuration.html
+ -->
+	<if condition='isDefined("catalina.home")' >
+		<then>
+			<!-- 外部のログ設定ファイルを読み込む -->
+			<include file="${catalina.home}/app-info/sample/logback-Conf.xml"/>
+		</then>
+		<else>
+			<!-- JUNITテスト用のコンフィグの記述 -->
+			<appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+			 	<encoder>
+					<pattern>%d %level %X{req.path} %X{sec.username}%X{sec.roles} %m%n</pattern>
+				</encoder>
+			</appender>
+			<logger name="mybatis.sample" additivity="false">
+				<level value="DEBUG" />
+				<appender-ref ref="STDOUT"/>
+			</logger>
+			<root level="INFO">
+				<appender-ref ref="STDOUT" />
+			</root>
+		</else>
+	</if>
+</configuration>

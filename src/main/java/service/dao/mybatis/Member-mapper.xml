@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" 
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mybatis.sample.Member" >
+	
+	<!-- 条件include(selectにもupdateにも使用できる) -->
+	<sql id="selectWhere">
+		<if test="!@com.sampletool.common.OgnlUtils@isEmpty(_parameter, 'id') and id != null">
+			AND id = #{id}
+		</if>
+		<if test="!@com.sampletool.common.OgnlUtils@isEmpty(_parameter, 'name') and name != null">
+			AND name = #{name}
+		</if>
+		<if test="!@com.sampletool.common.OgnlUtils@isEmpty(_parameter, 'nameBW') and nameBW != null">
+			<!-- 正規表現を使ってlikeエスケープする -->
+			AND name like regexp_replace(#{nameBW}, '([\\%_])', '\\\1', 'g') || '%'
+		</if>
+		<if test="!@com.sampletool.common.OgnlUtils@isEmpty(_parameter, 'ageFrom') and ageFrom > 0">
+			AND age >= #{ageFrom}
+		</if>
+		<if test="!@com.sampletool.common.OgnlUtils@isEmpty(_parameter, 'ageTo') and ageTo > 0">
+			<![CDATA[ 
+				AND age <= #{ageTo}
+			]]>
+		</if>
+		<if test="!@com.sampletool.common.OgnlUtils@isEmpty(_parameter, 'loginId') and loginId != null">
+			AND login_id = #{loginId}
+		</if>
+	</sql>
+	
+	
+	<!-- select用のフィールドindlude -->
+	<sql id="selectFileds">
+		id as id,
+		name as name,
+		age as age,
+		login_id as loginId,
+		login_pw as loginPw,
+		role as role,
+		up_date as upDate,
+		version as version
+	</sql>
+	
+	
+	<!-- 更新用フィールドinclude -->
+	<sql id="updateFileds">
+		name=#{name},
+		login_id=#{loginId},
+		login_pw=#{loginPw},
+		age=#{age},
+		role=#{role},
+		up_date=#{upDate}
+	</sql>
+
+	<!-- プライマリーキーで検索するselect -->
+	<select id="obtain" resultType="Member" parameterType="int">
+		select 
+			<include refid="selectFileds"/>
+		from t_member
+		where 
+			id = #{id}
+	</select>
+
+	<!-- 検索キーで検索するselect -->
+	<select id="find" resultType="Member">
+		select 
+			<include refid="selectFileds"/>
+		from t_member
+		
+		<where>
+			<include refid="selectWhere"/>
+		</where>
+
+		<if test="orderBy != null">
+			<foreach collection="orderBy" item="_col" separator="," open="order by" >
+				<choose>
+					<when test="_col ==  @com.sample.app.business.model.MemberSearchKeys@ORDER_ID"> id</when>
+					<when test="_col == -@com.sample.app.business.model.MemberSearchKeys@ORDER_ID"> id desc</when>
+					<when test="_col ==  @com.sample.app.business.model.MemberSearchKeys@ORDER_AGE"> age</when>
+					<when test="_col == -@com.sample.app.business.model.MemberSearchKeys@ORDER_AGE"> age desc</when>
+					<when test="_col ==  @com.sample.app.business.model.MemberSearchKeys@ORDER_NAME"> name</when>
+					<when test="_col == -@com.sample.app.business.model.MemberSearchKeys@ORDER_NAME"> name desc</when>
+				</choose>
+			</foreach>
+		</if>
+		
+		<include refid="Cmn.searchKeyPage"/>
+		<include refid="Cmn.forUpdate"/>
+	</select>
+
+
+	<!-- 検索キーで検索し、件数だけ返す -->
+	<select id="count" resultType="int">
+		select 
+			count(*)
+		from t_member
+		
+		<where>
+			<include refid="selectWhere"/>
+		</where>
+	</select>
+	
+	<!-- Memberを新規登録するinsert。idも新規作成し、オブジェクトに設定される。 -->
+	<insert id="insert" parameterType="Member" >
+		<selectKey keyProperty="id" resultType="int" order="BEFORE">
+			select nextval('seq_member_id') as id
+		</selectKey>
+		
+		insert into t_member(id, name, age, up_date, login_id, login_pw, role, version)
+		values(#{id}, #{name}, #{age}, #{upDate}, #{loginId}, #{loginPw}, #{role}, #{version})
+	</insert>
+
+
+	<!-- Memberを更新するupdate。 -->
+	<update id="update" parameterType="Member">
+		update t_member
+		set 
+			<include refid="updateFileds"/>,
+			version = version + 1
+		where
+			id = #{id}
+			<!-- 楽観的ロックのためバージョンが一致するものを更新 -->
+			and version = #{version} 
+	</update>
+
+</mapper>
