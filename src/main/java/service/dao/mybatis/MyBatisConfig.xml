@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+	<settings ><!-- SLF4J -->
+		<setting name="logImpl" value="SLF4J"/>
+		<setting name="lazyLoadingEnabled" value="false" />
+		<!--setting name="defaultScriptingLanguage" value="com.sampletool.common.mybatis.ExLanguageDriver"/-->
+	</settings>
+	
+	<typeAliases>
+		<typeAlias alias="DateTime" type="org.joda.time.DateTime"/>
+		<typeAlias alias="Member" type="com.sample.app.business.model.Member"/>
+		<typeAlias alias="MemberSearchKey" type="com.sample.app.business.model.MemberSearchKeys"/>
+	</typeAliases>
+	
+	<typeHandlers>
+		<typeHandler javaType="org.joda.time.DateTime" handler="com.sampletool.common.mybatis.JodaDateTimeTypeHandler" />
+	</typeHandlers>
+	
+</configuration>
